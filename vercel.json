@@ -1,0 +1,6 @@
+{
+  "functions": {
+    "api/analyze.py": { "maxDuration": 30 },
+    "api/transcribe.py": { "maxDuration": 30 }
+  }
+}

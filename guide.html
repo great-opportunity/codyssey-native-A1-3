@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>가이드 — Rewind</title>
+<meta name="description" content="Rewind 사용법과 자주 묻는 질문을 확인하세요.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<header class="site-header">
+  <div class="container header-inner">
+    <a href="index.html" class="logo">Rewind<span class="logo-dot">.</span></a>
+    <nav class="nav" id="nav">
+      <a href="index.html" class="nav-link">홈</a>
+      <a href="analyze.html" class="nav-link">분석하기</a>
+      <a href="guide.html" class="nav-link active">가이드</a>
+    </nav>
+    <button class="nav-toggle" id="navToggle" aria-label="메뉴 열기" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</header>
+
+<main>
+  <section class="page-head container">
+    <h1>가이드 &amp; FAQ</h1>
+    <p class="page-sub">Rewind를 200% 활용하는 방법</p>
+  </section>
+
+  <section class="guide container">
+    <div class="guide-block">
+      <h2>수업 녹음/기록 준비하기</h2>
+      <ul>
+        <li>화상영어 플랫폼에 자체 녹음/스크립트 기능이 있다면 그걸 그대로 활용하세요.</li>
+        <li>없다면 통화 앱의 녹음 기능이나 별도 녹음기를 사용해도 돼요.</li>
+        <li>대화 내용을 텍스트로 옮길 땐 <strong>Me: / Tutor:</strong> 처럼 화자를 표시해두면 분석 정확도가 올라가요.</li>
+      </ul>
+    </div>
+
+    <div class="guide-block">
+      <h2>한국인 영어 학습자가 자주 하는 실수</h2>
+      <div class="mistake-grid">
+        <div class="mistake-card">
+          <h3>시제 혼동</h3>
+          <p>"Yesterday I go to..." → 과거 시제 <em>went</em> 누락은 아주 흔해요.</p>
+        </div>
+        <div class="mistake-card">
+          <h3>관사 생략</h3>
+          <p>"I have appointment" → a/the 같은 관사를 자주 빠뜨려요.</p>
+        </div>
+        <div class="mistake-card">
+          <h3>형용사/부사 자리</h3>
+          <p>"I very like it" → "I like it very much"처럼 어순이 헷갈리기 쉬워요.</p>
+        </div>
+        <div class="mistake-card">
+          <h3>전치사 오용</h3>
+          <p>"discuss about" → discuss는 전치사 없이 바로 목적어를 받아요.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="guide-block">
+      <h2>FAQ</h2>
+      <details>
+        <summary>전사(음성→텍스트)는 무료인가요?</summary>
+        <p>완전 무료는 아니에요. 짧은 mp3(3MB 이하, 약 2~3분)는 AI 음성 인식으로 자동 전사할 수 있지만 비용이 아주 조금 들어요. 더 긴 녹음은 다른 도구로 텍스트로 옮긴 뒤 txt로 올려주세요.</p>
+      </details>
+      <details>
+        <summary>내 데이터는 저장되나요?</summary>
+        <p>서버에 대화 내용을 별도로 저장하지 않아요. 분석을 위해 AI API로 전달되었다가 결과만 화면에 표시돼요.</p>
+      </details>
+      <details>
+        <summary>분석이 잘 안 돼요.</summary>
+        <p>본인이 말한 문장이 너무 짧거나 화자 구분이 안 되면 정확도가 떨어질 수 있어요. <strong>Me:</strong> 표시를 붙여서 다시 시도해보세요.</p>
+      </details>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="container footer-inner">
+    <p>© 2026 Rewind. 화상영어 복습을 더 쉽게.</p>
+  </div>
+</footer>
+
+<script src="js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>분석하기 — Rewind</title>
+<meta name="description" content="화상영어 수업 대화를 붙여넣고 AI 분석 결과를 확인하세요.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<header class="site-header">
+  <div class="container header-inner">
+    <a href="index.html" class="logo">Rewind<span class="logo-dot">.</span></a>
+    <nav class="nav" id="nav">
+      <a href="index.html" class="nav-link">홈</a>
+      <a href="analyze.html" class="nav-link active">분석하기</a>
+      <a href="guide.html" class="nav-link">가이드</a>
+    </nav>
+    <button class="nav-toggle" id="navToggle" aria-label="메뉴 열기" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</header>
+
+<main>
+  <section class="page-head container">
+    <h1>대화를 붙여넣고 분석해보세요</h1>
+    <p class="page-sub">본인이 말한 부분만 넣어도 되고, 화자 표시가 있는 전체 대화를 넣어도 돼요. (예: <code>Me: ...</code> / <code>Tutor: ...</code>)</p>
+  </section>
+
+  <section class="analyze container">
+    <div class="input-tabs" role="tablist">
+      <button class="tab-btn active" data-tab="text" role="tab" aria-selected="true">텍스트 붙여넣기</button>
+      <button class="tab-btn" data-tab="txt" role="tab" aria-selected="false">txt 파일 업로드</button>
+      <button class="tab-btn" data-tab="audio" role="tab" aria-selected="false">mp3 업로드</button>
+    </div>
+
+    <div class="tab-panel" data-panel="text">
+      <textarea id="transcriptInput" rows="10" placeholder="예)
+Me: Yesterday I go to the dentist because my tooth was hurt.
+Tutor: Oh no, are you okay now?
+Me: Yes, but I very nervous because I hate needle."></textarea>
+    </div>
+
+    <div class="tab-panel hidden" data-panel="txt">
+      <label class="file-drop" for="txtFile">
+        <input type="file" id="txtFile" accept=".txt" hidden>
+        <span class="file-drop-label">txt 파일 선택</span>
+        <span class="file-drop-name" id="txtFileName"></span>
+      </label>
+    </div>
+
+    <div class="tab-panel hidden" data-panel="audio">
+      <label class="file-drop" for="audioFile">
+        <input type="file" id="audioFile" accept="audio/mpeg,.mp3" hidden>
+        <span class="file-drop-label">mp3 파일 선택 (3MB 이하, 약 2~3분)</span>
+        <span class="file-drop-name" id="audioFileName"></span>
+      </label>
+      <p class="hint">⚠️ 파일이 크면(긴 녹음) 업로드가 안 될 수 있어요. 그럴 땐 다른 도구로 텍스트 변환 후 txt로 올려주세요.</p>
+    </div>
+
+    <div class="analyze-actions">
+      <button id="analyzeBtn" class="btn btn-primary">분석하기</button>
+      <span id="statusMsg" class="status-msg" role="status" aria-live="polite"></span>
+    </div>
+
+    <div id="errorBox" class="error-box hidden" role="alert"></div>
+
+    <div id="resultBox" class="result-box hidden">
+      <h2>분석 결과</h2>
+      <p id="resultSummary" class="result-summary"></p>
+      <div id="resultList" class="result-list"></div>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="container footer-inner">
+    <p>© 2026 Rewind. 화상영어 복습을 더 쉽게.</p>
+  </div>
+</footer>
+
+<script src="js/main.js"></script>
+<script src="js/analyze.js"></script>
+</body>
+</html>
