@@ -32,8 +32,8 @@
   - 방식 B: txt 파일 업로드
   - 방식 C: mp3 파일 업로드 (3MB 이하, 약 2~3분) → Whisper API로 자동 전사 후 동일 파이프라인 진행
 - **처리**
-  1. (mp3인 경우) `POST /api/transcribe` → OpenAI Whisper API로 텍스트 전사
-  2. `POST /api/analyze` → OpenAI GPT(`gpt-4o-mini`)가 화자 표시를 참고해 학습자 발화만 추출,
+  1. (mp3인 경우) `POST /api` (`action: "transcribe"`) → OpenAI Whisper API로 텍스트 전사
+  2. `POST /api` (`action: "analyze"`) → OpenAI GPT(`gpt-4o-mini`)가 화자 표시를 참고해 학습자 발화만 추출,
      어색한 문장을 찾아 원문/자연스러운 표현/이유(문법·표현 포인트, 한국어 설명)를 JSON으로 반환
 - **출력**
   - 전체 총평 한 줄 요약

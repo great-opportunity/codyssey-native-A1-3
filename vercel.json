@@ -1,6 +1,6 @@
 {
+  "framework": null,
   "functions": {
-    "api/analyze.py": { "maxDuration": 30 },
-    "api/transcribe.py": { "maxDuration": 30 }
+    "api/index.py": { "maxDuration": 30 }
   }
 }

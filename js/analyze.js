@@ -123,11 +123,11 @@ document.addEventListener('DOMContentLoaded', () => {
     let res;
     try {
       res = await fetchWithTimeout(
-        '/api/analyze',
+        '/api',
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ transcript }),
+          body: JSON.stringify({ action: 'analyze', transcript }),
         },
         REQUEST_TIMEOUT_MS
       );
@@ -190,11 +190,11 @@ document.addEventListener('DOMContentLoaded', () => {
         let transcribeRes;
         try {
           transcribeRes = await fetchWithTimeout(
-            '/api/transcribe',
+            '/api',
             {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ audio_base64: base64, filename: file.name }),
+              body: JSON.stringify({ action: 'transcribe', audio_base64: base64, filename: file.name }),
             },
             REQUEST_TIMEOUT_MS
           );

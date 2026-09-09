@@ -1,10 +1,12 @@
 from http.server import BaseHTTPRequestHandler
 import json
 import os
+import base64
+import io
 
 from openai import OpenAI
 
-client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
+MAX_AUDIO_BYTES = 3 * 1024 * 1024
 
 SYSTEM_PROMPT = """You are an expert English tutor reviewing a transcript of a Korean \
 English learner's video-call English lesson.
@@ -46,6 +48,16 @@ class handler(BaseHTTPRequestHandler):
             self._send_json(400, {"error": "요청 형식이 올바르지 않습니다."})
             return
 
+        action = data.get("action")
+
+        if action == "analyze":
+            self._handle_analyze(data)
+        elif action == "transcribe":
+            self._handle_transcribe(data)
+        else:
+            self._send_json(400, {"error": "알 수 없는 요청입니다."})
+
+    def _handle_analyze(self, data):
         transcript = (data.get("transcript") or "").strip()
         if not transcript:
             self._send_json(
@@ -57,6 +69,7 @@ class handler(BaseHTTPRequestHandler):
             transcript = transcript[:12000]
 
         try:
+            client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
             completion = client.chat.completions.create(
                 model="gpt-4o-mini",
                 messages=[
@@ -81,6 +94,49 @@ class handler(BaseHTTPRequestHandler):
             result["summary"] = ""
 
         self._send_json(200, result)
+
+    def _handle_transcribe(self, data):
+        audio_b64 = data.get("audio_base64") or ""
+        filename = data.get("filename") or "audio.mp3"
+
+        if not audio_b64:
+            self._send_json(400, {"error": "음성 파일이 비어있습니다."})
+            return
+
+        try:
+            audio_bytes = base64.b64decode(audio_b64)
+        except Exception:
+            self._send_json(400, {"error": "음성 파일을 읽을 수 없습니다."})
+            return
+
+        if len(audio_bytes) > MAX_AUDIO_BYTES:
+            self._send_json(
+                400,
+                {
+                    "error": "음성 파일이 너무 큽니다(3MB 이하만 지원). "
+                    "다른 도구로 텍스트 변환 후 txt로 업로드해주세요."
+                },
+            )
+            return
+
+        audio_file = io.BytesIO(audio_bytes)
+        audio_file.name = filename
+
+        try:
+            client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
+            transcript = client.audio.transcriptions.create(
+                model="whisper-1",
+                file=audio_file,
+                timeout=25,
+            )
+        except Exception:
+            self._send_json(
+                502,
+                {"error": "음성 전사 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요."},
+            )
+            return
+
+        self._send_json(200, {"transcript": transcript.text})
 
     def do_OPTIONS(self):
         self.send_response(204)

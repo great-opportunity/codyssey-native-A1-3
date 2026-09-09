@@ -23,7 +23,7 @@
 ## 기술 스택
 
 - **프론트엔드**: HTML / CSS / Vanilla JavaScript (프레임워크 없음)
-- **백엔드**: Python — Vercel Serverless Functions (`api/analyze.py`, `api/transcribe.py`)
+- **백엔드**: Python — Vercel Serverless Functions (`api/index.py`, 단일 엔드포인트에서 `action` 값으로 분기)
 - **AI API**: OpenAI (`gpt-4o-mini` for 분석, `whisper-1` for 음성 전사)
 - **배포**: Vercel (GitHub 연동 자동 배포)
 
@@ -40,8 +40,7 @@
 │   ├── main.js        # 공통 (모바일 내비게이션)
 │   └── analyze.js      # 분석 페이지 로직 (입력, fetch, 결과 렌더링)
 ├── api/
-│   ├── analyze.py       # POST /api/analyze — 텍스트 분석
-│   └── transcribe.py    # POST /api/transcribe — mp3 → 텍스트 전사
+│   └── index.py          # POST /api — { action: "analyze" | "transcribe", ... }
 ├── requirements.txt
 ├── vercel.json
 └── .env.example
@@ -78,7 +77,7 @@
 
 | 변수명 | 설명 | 어디서 설정 |
 | --- | --- | --- |
-| `OPENAI_API_KEY` | OpenAI API 키. `api/analyze.py`, `api/transcribe.py`에서 사용 | 로컬: `.env` (git에 커밋 금지) / 배포: Vercel Project Settings → Environment Variables |
+| `OPENAI_API_KEY` | OpenAI API 키. `api/index.py`에서 사용 | 로컬: `.env` (git에 커밋 금지) / 배포: Vercel Project Settings → Environment Variables |
 
 API 키는 절대 프론트엔드 코드나 GitHub에 직접 노출하지 않고, 서버리스 함수(`api/`) 안에서만
 환경 변수로 읽어 사용합니다. `.env`는 `.gitignore`에 포함되어 있어 커밋되지 않습니다.
