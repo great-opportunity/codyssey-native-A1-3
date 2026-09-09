@@ -24,7 +24,8 @@
 
 - **프론트엔드**: HTML / CSS / Vanilla JavaScript (프레임워크 없음)
 - **백엔드**: Python — Vercel Serverless Functions (`api/index.py`, 단일 엔드포인트에서 `action` 값으로 분기)
-- **AI API**: OpenAI (`gpt-4o-mini` for 분석, `whisper-1` for 음성 전사)
+- **AI API**: OpenAI (`gpt-5-mini` for 분석, `whisper-1` for 음성 전사)
+  - 분석 모델은 `ANALYSIS_MODEL` 환경 변수로 교체 가능
 - **배포**: Vercel (GitHub 연동 자동 배포)
 
 ## 프로젝트 구조

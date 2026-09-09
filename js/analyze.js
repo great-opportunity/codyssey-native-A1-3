@@ -33,9 +33,12 @@ document.addEventListener('DOMContentLoaded', () => {
   const resultBox = document.getElementById('resultBox');
   const resultSummary = document.getElementById('resultSummary');
   const resultList = document.getElementById('resultList');
+  const patternSection = document.getElementById('patternSection');
+  const patternList = document.getElementById('patternList');
 
   const MAX_AUDIO_BYTES = 3 * 1024 * 1024;
-  const REQUEST_TIMEOUT_MS = 30000;
+  const REQUEST_TIMEOUT_MS = 280000;
+  let elapsedTimer = null;
 
   function clearError() {
     errorBox.classList.add('hidden');
@@ -49,7 +52,24 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function setLoading(isLoading, label) {
     analyzeBtn.disabled = isLoading;
-    statusMsg.textContent = isLoading ? (label || '분석 중...') : '';
+    clearInterval(elapsedTimer);
+
+    if (!isLoading) {
+      statusMsg.innerHTML = '';
+      return;
+    }
+
+    const text = label || '분석 중';
+    const started = Date.now();
+    const render = () => {
+      const seconds = Math.floor((Date.now() - started) / 1000);
+      statusMsg.innerHTML =
+        '<span class="spinner" aria-hidden="true"></span>' +
+        escapeHtml(text) + ' ' + seconds + '초' +
+        (seconds >= 20 ? ' <span class="status-hint">· 긴 대화는 1분 이상 걸릴 수 있어요</span>' : '');
+    };
+    render();
+    elapsedTimer = setInterval(render, 1000);
   }
 
   function readFileAsText(file) {
@@ -99,6 +119,24 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function renderResults(data) {
     resultSummary.textContent = data.summary || '';
+
+    patternList.innerHTML = '';
+    if (data.patterns && data.patterns.length > 0) {
+      data.patterns.forEach((pattern) => {
+        const card = document.createElement('div');
+        card.className = 'pattern-card';
+        const count = Number(pattern.count);
+        const countLabel = count > 0 ? '<span class="pattern-count">' + count + '회</span>' : '';
+        card.innerHTML =
+          '<p class="pattern-label">' + escapeHtml(pattern.label) + countLabel + '</p>' +
+          '<p class="pattern-advice">' + escapeHtml(pattern.advice) + '</p>';
+        patternList.appendChild(card);
+      });
+      patternSection.classList.remove('hidden');
+    } else {
+      patternSection.classList.add('hidden');
+    }
+
     resultList.innerHTML = '';
 
     if (!data.items || data.items.length === 0) {
@@ -119,7 +157,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   async function runAnalyze(transcript) {
-    setLoading(true, '분석 중...');
+    setLoading(true, '분석 중');
     let res;
     try {
       res = await fetchWithTimeout(
@@ -184,7 +222,7 @@ document.addEventListener('DOMContentLoaded', () => {
           return;
         }
 
-        setLoading(true, '음성 전사 중...');
+        setLoading(true, '음성 전사 중');
         const base64 = await readFileAsBase64(file);
 
         let transcribeRes;
