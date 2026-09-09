@@ -7,10 +7,22 @@
 
 ## 서비스 소개
 
-- 텍스트 붙여넣기 / txt 파일 업로드 / 짧은 mp3 업로드(3MB 이하) 세 가지 방식으로 수업 내용을 입력
-- AI(OpenAI GPT)가 화자 표시(`Me:` / `Tutor:`)를 참고해 학습자가 말한 문장만 골라 분석
+- 텍스트 붙여넣기 / txt 파일 / 녹음 파일(m4a·mp3·wav, 20분 내외) 세 가지 방식으로 입력
+- 녹음을 올리면 화자를 구분해 받아쓰고, **학습자가 말한 부분만** 골라 분석
 - 어색한 문장별로 원문 → 자연스러운 표현 → 이유(문법/표현 포인트)를 카드로 제공
-- mp3 업로드 시 OpenAI Whisper API로 먼저 텍스트 전사 후 동일한 분석 파이프라인 사용
+- 반복되는 실수 유형을 따로 묶어 "내 습관"으로 보여줌
+- 녹음에서 분석된 문장에는 **그 말을 한 시각**이 표시돼 해당 대목을 다시 들어볼 수 있음
+
+### 녹음 처리 방식
+
+Vercel 함수에는 요청 본문 4.5MB, 실행 시간 5분이라는 제약이 있어서 20분짜리 녹음을
+그대로 보낼 수 없다. 그래서 두 단계로 우회한다.
+
+1. **브라우저에서 압축** — Web Audio로 디코딩해 16kHz 모노로 낮추고 mp3(24kbps)로 다시
+   인코딩한다. 20분 기준 7MB대 원본이 약 3.7MB로 줄어든다.
+2. **조각내어 동시 전사** — 4분 단위로 잘라 여러 요청으로 나눠 보낸다. 각 조각은 실행
+   시간 제한 안에 끝나고, 동시에 처리되므로 전체 대기 시간도 짧아진다. 각 조각은 자신이
+   원본에서 시작하는 위치를 함께 보내 타임스탬프를 원본 기준으로 되돌린다.
 
 ## 페이지 구성
 
@@ -24,8 +36,8 @@
 
 - **프론트엔드**: HTML / CSS / Vanilla JavaScript (프레임워크 없음)
 - **백엔드**: Python — Vercel Serverless Functions (`api/index.py`, 단일 엔드포인트에서 `action` 값으로 분기)
-- **AI API**: OpenAI (`gpt-5-mini` for 분석, `whisper-1` for 음성 전사)
-  - 분석 모델은 `ANALYSIS_MODEL` 환경 변수로 교체 가능
+- **AI API**: OpenAI (`gpt-5-mini` for 분석, `gpt-4o-transcribe-diarize` for 화자분리 전사)
+  - 모델은 `ANALYSIS_MODEL`, `TRANSCRIBE_MODEL` 환경 변수로 교체 가능
 - **배포**: Vercel (GitHub 연동 자동 배포)
 
 ## 프로젝트 구조
@@ -39,6 +51,7 @@
 │   └── style.css
 ├── js/
 │   ├── main.js        # 공통 (모바일 내비게이션)
+│   ├── audio.js        # 녹음 파일 압축·분할 (Web Audio + lamejs)
 │   └── analyze.js      # 분석 페이지 로직 (입력, fetch, 결과 렌더링)
 ├── api/
 │   └── index.py          # POST /api — { action: "analyze" | "transcribe", ... }

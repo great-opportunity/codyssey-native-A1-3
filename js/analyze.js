@@ -36,7 +36,10 @@ document.addEventListener('DOMContentLoaded', () => {
   const patternSection = document.getElementById('patternSection');
   const patternList = document.getElementById('patternList');
 
-  const MAX_AUDIO_BYTES = 3 * 1024 * 1024;
+  // Vercel 함수 본문 상한(4.5MB)보다 조금 낮게 잡는다.
+  const MAX_UPLOAD_BYTES = 4200000;
+  // 조각 하나의 전사가 함수 실행 시간 제한(5분) 안에 끝나야 한다.
+  const AUDIO_CHUNK_SECONDS = 240;
   const REQUEST_TIMEOUT_MS = 280000;
   let elapsedTimer = null;
 
@@ -78,18 +81,6 @@ document.addEventListener('DOMContentLoaded', () => {
       reader.onload = () => resolve(reader.result);
       reader.onerror = () => reject(reader.error);
       reader.readAsText(file);
-    });
-  }
-
-  function readFileAsBase64(file) {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => {
-        const result = reader.result;
-        resolve(result.split(',')[1] || '');
-      };
-      reader.onerror = () => reject(reader.error);
-      reader.readAsDataURL(file);
     });
   }
 
@@ -145,7 +136,10 @@ document.addEventListener('DOMContentLoaded', () => {
       data.items.forEach((item) => {
         const card = document.createElement('div');
         card.className = 'result-card';
+        const stamp = (item.timestamp || '').trim();
+        const stampBadge = stamp ? '<span class="result-time">' + escapeHtml(stamp) + '</span>' : '';
         card.innerHTML =
+          stampBadge +
           '<p class="result-original">"' + escapeHtml(item.original) + '"</p>' +
           '<p class="result-suggestion">→ ' + escapeHtml(item.suggestion) + '</p>' +
           '<p class="result-reason">' + escapeHtml(item.reason) + '</p>';
@@ -154,6 +148,88 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     resultBox.classList.remove('hidden');
+  }
+
+  async function transcribeChunk(chunk) {
+    const res = await fetchWithTimeout(
+      '/api?action=transcribe&offset=' + chunk.startSeconds,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/octet-stream' },
+        body: chunk.blob,
+      },
+      REQUEST_TIMEOUT_MS
+    );
+
+    if (!res.ok) {
+      const err = await safeJson(res);
+      throw new Error((err && err.error) || '음성 전사 중 오류가 발생했어요.');
+    }
+
+    const data = await res.json();
+    return { startSeconds: chunk.startSeconds, text: (data.transcript || '').trim() };
+  }
+
+  async function runAudioFlow(file) {
+    let prepared;
+    try {
+      prepared = await AudioCompressor.compressToChunks(file, {
+        maxBytes: MAX_UPLOAD_BYTES,
+        chunkSeconds: AUDIO_CHUNK_SECONDS,
+        onStage: (stage, info) => {
+          if (stage === 'decode') {
+            setLoading(true, '녹음 파일 읽는 중');
+          } else {
+            setLoading(true, '업로드 준비 중 ' + info.index + '/' + info.total);
+          }
+        },
+      });
+    } catch (e) {
+      setLoading(false);
+      showError(e.message || '녹음 파일을 변환하지 못했어요. 다른 파일로 시도해주세요.');
+      return;
+    }
+
+    const chunks = prepared.chunks;
+    let done = 0;
+    const describe = () =>
+      chunks.length > 1
+        ? '화자 나눠서 받아쓰는 중 ' + done + '/' + chunks.length
+        : '화자 나눠서 받아쓰는 중';
+
+    setLoading(true, describe());
+
+    let results;
+    try {
+      // 조각을 동시에 보내야 20분 녹음도 기다릴 만한 시간에 끝난다.
+      results = await Promise.all(
+        chunks.map((chunk) =>
+          transcribeChunk(chunk).then((result) => {
+            done += 1;
+            setLoading(true, describe());
+            return result;
+          })
+        )
+      );
+    } catch (e) {
+      setLoading(false);
+      showError(e.message || '받아쓰기에 실패했어요. 다시 시도하거나 텍스트로 붙여넣어 주세요.');
+      return;
+    }
+
+    results.sort((a, b) => a.startSeconds - b.startSeconds);
+    const transcript = results
+      .filter((r) => r.text)
+      .map((r) => r.text)
+      .join('\n');
+
+    if (!transcript) {
+      setLoading(false);
+      showError('전사 결과가 비어있어요. 녹음 상태를 확인해주세요.');
+      return;
+    }
+
+    await runAnalyze(transcript);
   }
 
   async function runAnalyze(transcript) {
@@ -214,44 +290,10 @@ document.addEventListener('DOMContentLoaded', () => {
       } else if (activeTab === 'audio') {
         const file = audioFileInput.files[0];
         if (!file) {
-          showError('mp3 파일을 선택해주세요.');
+          showError('녹음 파일을 선택해주세요.');
           return;
         }
-        if (file.size > MAX_AUDIO_BYTES) {
-          showError('파일이 너무 커요(3MB 이하만 지원). 다른 도구로 텍스트 변환 후 txt로 업로드해주세요.');
-          return;
-        }
-
-        setLoading(true, '음성 전사 중');
-        const base64 = await readFileAsBase64(file);
-
-        let transcribeRes;
-        try {
-          transcribeRes = await fetchWithTimeout(
-            '/api',
-            {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ action: 'transcribe', audio_base64: base64, filename: file.name }),
-            },
-            REQUEST_TIMEOUT_MS
-          );
-        } catch (e) {
-          setLoading(false);
-          showError('전사 요청이 너무 오래 걸려요. 다시 시도하거나 txt로 업로드해주세요.');
-          return;
-        }
-
-        if (!transcribeRes.ok) {
-          const err = await safeJson(transcribeRes);
-          setLoading(false);
-          showError((err && err.error) || '음성 전사 중 오류가 발생했어요.');
-          return;
-        }
-
-        const transcribeData = await transcribeRes.json();
-        setLoading(false);
-        await runAnalyze(transcribeData.transcript);
+        await runAudioFlow(file);
       }
     } catch (e) {
       setLoading(false);

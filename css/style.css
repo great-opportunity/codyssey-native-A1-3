@@ -462,6 +462,18 @@ textarea#transcriptInput {
   box-shadow: var(--shadow);
 }
 
+.result-time {
+  display: inline-block;
+  margin-bottom: 8px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--border);
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
 .result-original {
   margin: 0 0 6px;
   color: var(--text-muted);

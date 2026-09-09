@@ -35,7 +35,7 @@
     <div class="input-tabs" role="tablist">
       <button class="tab-btn active" data-tab="text" role="tab" aria-selected="true">텍스트 붙여넣기</button>
       <button class="tab-btn" data-tab="txt" role="tab" aria-selected="false">txt 파일 업로드</button>
-      <button class="tab-btn" data-tab="audio" role="tab" aria-selected="false">mp3 업로드</button>
+      <button class="tab-btn" data-tab="audio" role="tab" aria-selected="false">녹음 파일 업로드</button>
     </div>
 
     <div class="tab-panel" data-panel="text">
@@ -55,11 +55,11 @@ Me: Yes, but I very nervous because I hate needle."></textarea>
 
     <div class="tab-panel hidden" data-panel="audio">
       <label class="file-drop" for="audioFile">
-        <input type="file" id="audioFile" accept="audio/mpeg,.mp3" hidden>
-        <span class="file-drop-label">mp3 파일 선택 (3MB 이하, 약 2~3분)</span>
+        <input type="file" id="audioFile" accept="audio/*" hidden>
+        <span class="file-drop-label">녹음 파일 선택 (m4a, mp3, wav — 20분 내외)</span>
         <span class="file-drop-name" id="audioFileName"></span>
       </label>
-      <p class="hint">⚠️ 파일이 크면(긴 녹음) 업로드가 안 될 수 있어요. 그럴 땐 다른 도구로 텍스트 변환 후 txt로 올려주세요.</p>
+      <p class="hint">튜터와 내 목소리를 구분해서 받아쓰기 때문에, 튜터 말은 빼고 내가 말한 부분만 분석해요. 결과에는 녹음 속 시각이 함께 표시돼서 그 대목을 다시 들어볼 수 있어요.<br>20분 녹음 기준 <strong>4~5분</strong> 정도 걸리고, 창을 닫으면 처음부터 다시 해야 해요. 파일은 저장되지 않습니다.</p>
     </div>
 
     <div class="analyze-actions">
@@ -90,7 +90,11 @@ Me: Yes, but I very nervous because I hate needle."></textarea>
   </div>
 </footer>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/lamejs/1.2.1/lame.min.js"
+        integrity="sha384-xuasJXVcyv3hZq0eYpelEkBC8l4yufatZXDsKuyCU2rqfhDCb+ftuE/mSfZAteiK"
+        crossorigin="anonymous"></script>
 <script src="js/main.js"></script>
+<script src="js/audio.js"></script>
 <script src="js/analyze.js"></script>
 </body>
 </html>
