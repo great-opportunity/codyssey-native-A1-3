@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>모바일 화면 캡처용 — Rewind</title>
+<!--
+  제출용 모바일 스크린샷을 찍기 위한 페이지.
+
+  데스크톱 브라우저 창을 줄여도 실제 폰과 같은 화면이 나오지 않는 경우가 있어,
+  좁은 프레임 안에 배포된 사이트를 띄운다. 프레임 내부 너비가 390px이므로
+  모바일용 CSS가 그대로 적용된다. 이 파일은 배포물이 아니라 캡처용 도구다.
+-->
+<style>
+  body {
+    margin: 0;
+    padding: 24px;
+    background: #d8d3ca;
+    font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, sans-serif;
+  }
+  h1 {
+    text-align: center;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #4a463f;
+    margin: 0 0 20px;
+  }
+  .frames {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+  figure {
+    margin: 0;
+    text-align: center;
+  }
+  iframe {
+    width: 390px;
+    height: 760px;
+    border: 9px solid #2b2b2b;
+    border-radius: 28px;
+    background: #fff;
+    display: block;
+  }
+  figcaption {
+    margin-top: 10px;
+    font-size: 0.85rem;
+    color: #4a463f;
+  }
+</style>
+</head>
+<body>
+  <h1>아래 세 화면을 함께 캡처하세요 (Cmd + Shift + 4 로 영역 선택)</h1>
+  <div class="frames">
+    <figure>
+      <iframe src="https://rewind-eng-mvp.vercel.app/" title="홈"></iframe>
+      <figcaption>홈</figcaption>
+    </figure>
+    <figure>
+      <iframe src="https://rewind-eng-mvp.vercel.app/analyze.html" title="분석하기"></iframe>
+      <figcaption>분석하기</figcaption>
+    </figure>
+    <figure>
+      <iframe src="https://rewind-eng-mvp.vercel.app/guide.html" title="가이드"></iframe>
+      <figcaption>가이드</figcaption>
+    </figure>
+  </div>
+</body>
+</html>
