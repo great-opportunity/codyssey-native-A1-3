@@ -77,7 +77,12 @@ good for you so would you go back again
 yes of course I want go again in summer maybe I will can swim in the sea
 ```
 
-## 3. 나머지 제출물 — 이미 준비됨
+## 3. 실패 처리 설명 자료
+
+[`error-handling.md`](error-handling.md) — 어떤 실패가 가능한지 미리 정의하고, 각각을
+어디서 막고 어떤 메시지를 보여주는지 정리했습니다. 평가 때 설명할 내용입니다.
+
+## 4. 나머지 제출물 — 이미 준비됨
 
 | 항목 | 위치 |
 | --- | --- |

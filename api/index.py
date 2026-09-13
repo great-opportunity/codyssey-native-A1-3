@@ -3,7 +3,9 @@ from urllib.parse import urlparse, parse_qs
 import json
 import os
 import io
+import sys
 
+import openai
 from openai import OpenAI
 
 # Vercel 함수의 요청 본문 상한이 4.5MB라 그보다 조금 낮게 잡는다.
@@ -104,6 +106,58 @@ SYSTEM_PROMPT = """당신은 한국인 영어 학습자의 화상영어 수업 �
 작성하세요."""
 
 
+def classify_error(exc, stage):
+    """AI 호출이 실패한 까닭을 구분해 (상태코드, 사용자 메시지)로 바꾼다.
+
+    한 덩어리로 뭉뚱그리면 화면에도 로그에도 "오류가 발생했습니다"만 남아서,
+    크레딧이 떨어진 것인지 키가 틀린 것인지 알 수 없다. 원인마다 다른 조치가
+    필요하므로 나눠서 알린다.
+
+    사용자에게는 본인이 할 수 있는 일만 말한다. 설정이 잘못된 경우처럼 손쓸
+    수 없는 상황은 "설정 문제"로만 알리고, 자세한 내용은 로그로 남긴다.
+    """
+    if isinstance(exc, openai.APITimeoutError):
+        return 504, "분석이 제한 시간 안에 끝나지 않았어요. 더 짧은 녹음으로 나눠서 시도해주세요."
+
+    if isinstance(exc, openai.RateLimitError):
+        # 호출량 초과와 잔액 소진이 모두 429로 온다
+        return 429, "지금은 요청이 밀려 있어요. 잠시 후 다시 시도해주세요."
+
+    if isinstance(exc, openai.AuthenticationError):
+        return 500, "서비스 설정에 문제가 있어 분석할 수 없어요. 관리자에게 알려주세요."
+
+    if isinstance(exc, openai.NotFoundError):
+        # 모델 이름이 틀렸거나 계정에 권한이 없는 경우
+        return 500, "서비스 설정에 문제가 있어 분석할 수 없어요. 관리자에게 알려주세요."
+
+    if isinstance(exc, openai.BadRequestError):
+        # 입력이 한도를 넘었거나 형식이 맞지 않음
+        return 400, "보낸 내용을 처리할 수 없어요. 녹음이나 텍스트가 너무 길지 않은지 확인해주세요."
+
+    if isinstance(exc, openai.APIConnectionError):
+        return 502, "AI 서버에 연결하지 못했어요. 잠시 후 다시 시도해주세요."
+
+    if isinstance(exc, openai.InternalServerError):
+        return 502, "AI 서버에 일시적인 문제가 있어요. 잠시 후 다시 시도해주세요."
+
+    if isinstance(exc, json.JSONDecodeError):
+        return 502, "분석 결과를 해석하지 못했어요. 다시 시도해주세요."
+
+    return 500, "분석 중 문제가 생겼어요. 잠시 후 다시 시도해주세요."
+
+
+def log_error(exc, stage):
+    """Vercel 로그에 남길 한 줄. 예외를 삼키면 원인을 추적할 수 없다."""
+    detail = f"[{stage}] {type(exc).__name__}: {exc}"
+    status = getattr(exc, "status_code", None)
+    if status:
+        detail += f" (HTTP {status})"
+    request_id = getattr(exc, "request_id", None)
+    if request_id:
+        detail += f" request_id={request_id}"
+    print(detail, file=sys.stderr, flush=True)
+
+
 def _format_timestamp(seconds):
     try:
         total = int(float(seconds))
@@ -199,11 +253,10 @@ class handler(BaseHTTPRequestHandler):
                 timeout=240,
             )
             result = json.loads(completion.choices[0].message.content)
-        except Exception:
-            self._send_json(
-                502,
-                {"error": "AI 분석 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요."},
-            )
+        except Exception as exc:
+            log_error(exc, "analyze")
+            status, message = classify_error(exc, "analyze")
+            self._send_json(status, {"error": message})
             return
 
         result.setdefault("items", [])
@@ -252,11 +305,10 @@ class handler(BaseHTTPRequestHandler):
                 chunking_strategy="auto",
                 timeout=240,
             )
-        except Exception:
-            self._send_json(
-                502,
-                {"error": "음성 전사 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요."},
-            )
+        except Exception as exc:
+            log_error(exc, "transcribe")
+            status, message = classify_error(exc, "transcribe")
+            self._send_json(status, {"error": message})
             return
 
         segments = getattr(transcription, "segments", None) or []
