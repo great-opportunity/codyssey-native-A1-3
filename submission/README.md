@@ -77,12 +77,17 @@ good for you so would you go back again
 yes of course I want go again in summer maybe I will can swim in the sea
 ```
 
-## 3. 실패 처리 설명 자료
+## 3. 시연 대본
+
+[`demo-script.md`](demo-script.md) — 평가 때 무엇을 어떤 순서로 보여주고 무엇을
+말할지 정리했습니다. 환경 변수, 입력 UI, 결과 표시, 실패 처리 순서입니다.
+
+## 4. 실패 처리 설명 자료
 
 [`error-handling.md`](error-handling.md) — 어떤 실패가 가능한지 미리 정의하고, 각각을
 어디서 막고 어떤 메시지를 보여주는지 정리했습니다. 평가 때 설명할 내용입니다.
 
-## 4. 나머지 제출물 — 이미 준비됨
+## 5. 나머지 제출물 — 이미 준비됨
 
 | 항목 | 위치 |
 | --- | --- |
