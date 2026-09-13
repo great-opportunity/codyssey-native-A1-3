@@ -496,6 +496,106 @@ textarea#transcriptInput {
   color: var(--text-muted);
 }
 
+/* 받아쓴 전체 대화 */
+.transcript-section {
+  margin-top: 32px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 14px 18px;
+}
+
+.transcript-section > summary {
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.transcript-meta {
+  color: var(--text-muted);
+  font-weight: 400;
+  font-size: 0.85rem;
+  margin-left: 6px;
+}
+
+.transcript-actions {
+  margin: 14px 0 10px;
+}
+
+.btn-mini {
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 5px 14px;
+  font-size: 0.82rem;
+  font-family: inherit;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.btn-mini:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+.transcript-body {
+  max-height: 420px;
+  overflow-y: auto;
+  border-top: 1px solid var(--border);
+  padding-top: 12px;
+}
+
+.transcript-line {
+  display: flex;
+  gap: 8px;
+  align-items: baseline;
+  padding: 4px 0;
+  font-size: 0.9rem;
+  line-height: 1.55;
+}
+
+.transcript-time {
+  flex-shrink: 0;
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  font-variant-numeric: tabular-nums;
+  padding-top: 2px;
+}
+
+.transcript-speaker {
+  flex-shrink: 0;
+  min-width: 20px;
+  text-align: center;
+  padding: 1px 7px;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #fff;
+}
+
+.transcript-speaker.speaker-0,
+.transcript-speaker.speaker-me { background: var(--primary); }
+
+.transcript-speaker.speaker-1,
+.transcript-speaker.speaker-tutor { background: var(--accent); }
+
+/* 역할 이름은 기호보다 길어서 배지 폭을 조금 넓게 잡는다. */
+.transcript-speaker.speaker-me,
+.transcript-speaker.speaker-tutor {
+  min-width: 34px;
+}
+
+.transcript-text {
+  word-break: break-word;
+}
+
+@media (max-width: 480px) {
+  .transcript-line {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+}
+
 /* ---------- guide page ---------- */
 .guide {
   padding: 32px 24px 96px;

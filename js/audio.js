@@ -7,7 +7,12 @@
  */
 (function (global) {
   const TARGET_SAMPLE_RATE = 16000;
-  const DEFAULT_BITRATE_KBPS = 24;
+  /*
+   * 너무 낮게 깎으면 목소리의 음색이 뭉개져서 화자 구분이 어긋난다(같은 사람이
+   * 여러 명으로 인식됐다). 조각을 짧게 나눈 덕에 용량 여유가 있으므로 넉넉히 준다.
+   * 2분 30초 조각 기준 약 900KB.
+   */
+  const DEFAULT_BITRATE_KBPS = 48;
   const SAMPLES_PER_CHUNK = 1152; // MP3 프레임 하나에 들어가는 샘플 수
 
   function readAsArrayBuffer(file) {
@@ -115,7 +120,9 @@
     for (let index = 0; index < total; index++) {
       const from = index * samplesPerChunk;
       const slice = samples.subarray(from, Math.min(from + samplesPerChunk, samples.length));
-      if (!slice.length) {
+
+      // 끝에 남은 1초 미만의 자투리는 받아쓸 내용이 없어 보낼 이유가 없다.
+      if (slice.length < TARGET_SAMPLE_RATE) {
         continue;
       }
 
