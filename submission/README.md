@@ -13,7 +13,12 @@
 python3 submission/make-log.py
 ```
 
-## 2. 스크린샷 — 직접 찍어야 함
+## 2. 스크린샷 — 모바일만 남음
+
+`screenshots/` 에 데스크톱 2장과 AI 기능 동작 3장이 들어 있습니다(목록은
+[`screenshots/README.md`](screenshots/README.md)). 남은 것은 모바일 화면 한 장입니다.
+
+아래는 아직 안 찍은 화면을 보탤 때 참고할 내용입니다.
 
 macOS는 `Cmd + Shift + 4`로 영역을 선택해 캡처합니다. 찍은 파일은 이 폴더에
 `screenshots/` 를 만들어 넣으면 됩니다.
