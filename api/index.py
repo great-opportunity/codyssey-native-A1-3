@@ -15,6 +15,17 @@ MAX_AUDIO_BYTES = 4_300_000
 # 60분 수업 녹취록도 잘리지 않을 만한 상한 (영어 기준 약 1만 토큰)
 MAX_TRANSCRIPT_CHARS = 40000
 
+# AI 호출을 언제 포기할지.
+#
+# Vercel은 300초가 지나면 함수를 그냥 죽인다. 그때는 우리 코드가 한 줄도 실행되지
+# 못해서 원인을 로그에 남길 수도, 사용자에게 무슨 일인지 알려줄 수도 없다. 그보다
+# 조금 먼저 스스로 포기해야 통제권을 잃지 않는다. 정상 동작에서는 걸릴 일이 없는
+# 안전망이다.
+#
+# SDK는 실패한 요청을 기본 2회 재시도하는데, 그러면 이 값이 시도마다 따로 적용되어
+# 합계가 300초를 훌쩍 넘는다. 그래서 재시도를 끄고(max_retries=0) 한 번만 시도한다.
+API_TIMEOUT_SECONDS = 250
+
 # 환경 변수로 모델을 바꿔 끼울 수 있게 해둔다 (배포 없이 실험 가능)
 ANALYSIS_MODEL = os.environ.get("ANALYSIS_MODEL", "gpt-5-mini")
 TRANSCRIBE_MODEL = os.environ.get("TRANSCRIBE_MODEL", "gpt-4o-transcribe-diarize")
@@ -242,7 +253,7 @@ class handler(BaseHTTPRequestHandler):
             transcript = transcript[:MAX_TRANSCRIPT_CHARS]
 
         try:
-            client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
+            client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"), max_retries=0)
             completion = client.chat.completions.create(
                 model=ANALYSIS_MODEL,
                 messages=[
@@ -250,7 +261,7 @@ class handler(BaseHTTPRequestHandler):
                     {"role": "user", "content": transcript},
                 ],
                 response_format={"type": "json_object"},
-                timeout=240,
+                timeout=API_TIMEOUT_SECONDS,
             )
             result = json.loads(completion.choices[0].message.content)
         except Exception as exc:
@@ -296,14 +307,14 @@ class handler(BaseHTTPRequestHandler):
         audio_file.name = "lesson.mp3"
 
         try:
-            client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
+            client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"), max_retries=0)
             transcription = client.audio.transcriptions.create(
                 model=TRANSCRIBE_MODEL,
                 file=audio_file,
                 response_format="diarized_json",
                 # 화자분리 모델은 이 값을 반드시 요구한다.
                 chunking_strategy="auto",
-                timeout=240,
+                timeout=API_TIMEOUT_SECONDS,
             )
         except Exception as exc:
             log_error(exc, "transcribe")
